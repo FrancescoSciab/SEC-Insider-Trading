@@ -4,15 +4,15 @@ A mobile app that delivers official SEC insider trading data (Form 4 filings) in
 
 ## Tech Stack
 
-| Layer | Tech | Cost |
-|---|---|---|
-| Mobile frontend | React Native + Expo | Free |
-| Navigation | React Navigation | Free |
-| HTTP client | Axios | Free |
-| Backend | Node.js + Express | Free |
-| Database | MongoDB Atlas | Free (512MB) |
-| Hosting | Render / Railway | Free tier |
-| Data source | SEC EDGAR APIs | Free forever |
+| Layer           | Tech                | Cost         |
+| --------------- | ------------------- | ------------ |
+| Mobile frontend | React Native + Expo | Free         |
+| Navigation      | React Navigation    | Free         |
+| HTTP client     | Axios               | Free         |
+| Backend         | Node.js + Express   | Free         |
+| Database        | MongoDB Atlas       | Free (512MB) |
+| Hosting         | Render / Railway    | Free tier    |
+| Data source     | SEC EDGAR APIs      | Free forever |
 
 ---
 
@@ -76,6 +76,7 @@ npm run ingest
 The server will auto-trigger ingestion on first start if DB is empty.
 
 **Backend API endpoints:**
+
 - `GET /api/transactions/recent` — Latest filings (paginated)
 - `GET /api/transactions/ticker/:ticker` — By stock ticker
 - `GET /api/transactions/insider/:name` — By insider name
@@ -115,13 +116,14 @@ For testing on a physical device: set `EXPO_PUBLIC_API_URL` to your machine's **
 
 The backend has three ingestion modes:
 
-| Command | Description |
-|---|---|
-| `npm run ingest` | Ingest last 30 days of Form 4 filings |
-| `npm run ingest quarterly 2024 4` | Ingest full Q4 2024 bulk dataset |
-| Cron (auto) | Runs daily at 2am UTC, ingests last 2 days |
+| Command                           | Description                                |
+| --------------------------------- | ------------------------------------------ |
+| `npm run ingest`                  | Ingest last 30 days of Form 4 filings      |
+| `npm run ingest quarterly 2024 4` | Ingest full Q4 2024 bulk dataset           |
+| Cron (auto)                       | Runs daily at 2am UTC, ingests last 2 days |
 
 Data flows:
+
 1. Fetch Form 4 filing list from EDGAR EFTS search API
 2. For each filing: download and parse the XML
 3. Parse insider details, transaction details, company info
@@ -131,12 +133,12 @@ Data flows:
 
 ## SEC Data Sources (All Free)
 
-| Source | URL |
-|---|---|
-| EFTS search (filings) | `https://efts.sec.gov/LATEST/search-index` |
-| EDGAR submissions | `https://data.sec.gov/submissions/CIK{cik}.json` |
-| Company tickers | `https://www.sec.gov/files/company_tickers.json` |
-| Full-index quarterly | `https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{n}/form.idx` |
+| Source                | URL                                                                    |
+| --------------------- | ---------------------------------------------------------------------- |
+| EFTS search (filings) | `https://efts.sec.gov/LATEST/search-index`                             |
+| EDGAR submissions     | `https://data.sec.gov/submissions/CIK{cik}.json`                       |
+| Company tickers       | `https://www.sec.gov/files/company_tickers.json`                       |
+| Full-index quarterly  | `https://www.sec.gov/Archives/edgar/full-index/{year}/QTR{n}/form.idx` |
 
 No API key required. SEC only asks for a descriptive `User-Agent` header (included in the code).
 
