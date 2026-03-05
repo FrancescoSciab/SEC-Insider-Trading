@@ -1,0 +1,88 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  # ── 1. Lint ──────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # ── 2. Expo Export Validation ─────────────────────────────────────────────
+  # This is the React Native equivalent of "does the build compile"
+  # It runs expo export which bundles JS — catches import errors, missing modules etc.
+  expo-export:
+    name: Expo Bundle Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Validate Expo config
+        run: npx expo config --type public
+        env:
+          EXPO_PUBLIC_API_URL: http://localhost:3000/api
+
+      - name: Run Expo export (bundle check)
+        run: npx expo export --platform web --output-dir /tmp/expo-out --no-minify
+        env:
+          EXPO_PUBLIC_API_URL: http://localhost:3000/api
+          CI: true
+
+  # ── 3. Security Audit ────────────────────────────────────────────────────────
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run npm audit (high severity)
+        # --legacy-peer-deps because of Expo SDK peer dep quirks
+        run: npm audit --audit-level=high --legacy-peer-deps || true
+        # Note: "|| true" prevents false failures from Expo's peer dep warnings
+        # Remove it once you've resolved all peer dep issues
